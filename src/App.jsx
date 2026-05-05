@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { gameData } from './data/games';
 import { GameCard } from './components/GameCard';
+import { GameModal } from './components/GameModal';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './App.css';
@@ -10,8 +11,18 @@ import './App.css';
 function App() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('dash');
+  const [favorites, setFavorites] = useState([]);
 
-  const filteredGames = gameData.filter(() => activeTab ==='dash') .filter((game) =>game.title.toLowerCase().includes(search.toLowerCase()));
+  const [selectedGame, setSelectedGame] = useState(null);
+
+  const filteredGames = gameData
+  .filter((game) => activeTab ==='dash' || favorites.includes(game.id)) 
+  .filter((game) =>game.title.toLowerCase().includes(search.toLowerCase()));
+
+  const toggleFavorite = (id) => {
+    setFavorites((prev) => prev.includes(id) ? prev.filter((favId) => favId !== id) : [...prev, id]);
+  };
+
 
   useEffect(() => {
     AOS.init({
@@ -45,14 +56,20 @@ function App() {
             category={g.category}
             banner={g.banner}
             index={index}
+            isFavorite={favorites.includes(g.id)}
+            onFavorites={() => toggleFavorite(g.id)}
+
+            onPlay={() => setSelectedGame(g)}
             />
             ))
           ) : (
             <p style={{ color: "#94a3b8" }}> Nenhum jogo encontrado </p> )}
-            
         </div>
+        
       </div>
       </main>
+
+      <GameModal game={selectedGame} onClose={() => setSelectedGame(null)} />
     </div>
   )
 }
